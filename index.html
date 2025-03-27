@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horários das Salas</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #007BFF; color: white; }
+        .hidden { display: none; }
+        .circle {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            margin: 3px;
+            border-radius: 50%;
+            background-color: green;
+            color: white;
+            text-align: center;
+            line-height: 25px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .circle.red { background-color: red; }
+        .circle.yellow { background-color: yellow; color: black; }
+        #legenda-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Horários das Salas - 2025.1</h2>
+    <div class="room-buttons">
+        <button onclick="toggleTable('manha-table')">Toggle Manhã</button>
+        <button onclick="toggleTable('tarde-table')">Toggle Tarde</button>
+        <button onclick="toggleTable('noite-table')">Toggle Noite</button>
+    </div>
+
+    <table id="manha-table">
+        <tr>
+            <th>Horário</th>
+            <th>Segunda</th>
+            <th>Terça</th>
+            <th>Quarta</th>
+            <th>Quinta</th>
+            <th>Sexta</th>
+            <th>Sábado</th>
+        </tr>
+    </table>
+
+    <table id="tarde-table" class="hidden">
+        <tr>
+            <th>Horário</th>
+            <th>Segunda</th>
+            <th>Terça</th>
+            <th>Quarta</th>
+            <th>Quinta</th>
+            <th>Sexta</th>
+            <th>Sábado</th>
+        </tr>
+    </table>
+
+    <table id="noite-table" class="hidden">
+        <tr>
+            <th>Horário</th>
+            <th>Segunda</th>
+            <th>Terça</th>
+            <th>Quarta</th>
+            <th>Quinta</th>
+            <th>Sexta</th>
+            <th>Sábado</th>
+        </tr>
+    </table>
+
+    <div id="legenda-container">
+        <h3>Legenda:</h3>
+        <ul id="legenda-lista"></ul>
+    </div>
+
+    <script>
+        function toggleTable(tableId) {
+            const table = document.getElementById(tableId);
+            table.classList.toggle('hidden');
+        }
+
+        function toggleCircle(event) {
+            const senha = prompt("Digite a senha para modificar:");
+            if (senha !== "123") {
+                alert("Senha incorreta!");
+                return;
+            }
+
+            const circle = event.target;
+            const numero = circle.textContent;
+            const legendaLista = document.getElementById("legenda-lista");
+
+            const [horario, dia, turno] = circle.dataset.info.split('|');
+            const legendaId = `legenda-${turno}-${dia}-${horario}-${numero}`;
+            
+            if (circle.classList.contains('red')) {
+                circle.classList.remove('red');
+                circle.classList.add('yellow');
+            } else if (circle.classList.contains('yellow')) {
+                circle.classList.remove('yellow');
+                circle.removeAttribute('title');
+            } else {
+                circle.classList.add('red');
+            }
+
+            if (circle.classList.contains('red')) {
+                let info = prompt(`Insira informações para ${dia} (${turno}) - ${horario}:`);
+                if (info) {
+                    let itemLegenda = document.createElement("li");
+                    itemLegenda.id = legendaId;
+                    itemLegenda.textContent = `[${turno}] ${dia} - ${horario} | Nº ${numero}: ${info}`;
+                    legendaLista.appendChild(itemLegenda);
+                    circle.setAttribute('title', info); // Adiciona tooltip
+                } else {
+                    circle.classList.remove('red');
+                }
+            } else {
+                let itemLegenda = document.getElementById(legendaId);
+                if (itemLegenda) {
+                    itemLegenda.remove();
+                }
+            }
+        }
+
+        function criarTabela(idTabela, horarios, turno) {
+            const tabela = document.getElementById(idTabela);
+            const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+
+            horarios.forEach(horario => {
+                const row = tabela.insertRow();
+                const cellHorario = row.insertCell(0);
+                cellHorario.textContent = horario;
+
+                dias.forEach((dia) => {
+                    const cell = row.insertCell();
+                    for (let i = 1; i <= 18; i++) {
+                        const circle = document.createElement("span");
+                        circle.className = "circle";
+                        circle.textContent = i;
+                        circle.dataset.info = `${horario}|${dia}|${turno}`; 
+                        circle.addEventListener("click", toggleCircle);
+                        cell.appendChild(circle);
+                    }
+                });
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            criarTabela("manha-table", ["07:15-09:15 (AB)", "09:15-11:30 (CD)"], "Manhã");
+            criarTabela("tarde-table", ["13:15-15:10 (AB)", "15:20-17:30 (CD)"], "Tarde");
+            criarTabela("noite-table", ["18:30-20:10 (AB)", "20:20-22:00 (CD)"], "Noite");
+        });
+
+    </script>
+</body>
+</html>
