@@ -1,15 +1,47 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horários das Salas</title>
+    <title>Horários das Salas - 2025.1</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background: #007BFF; color: white; }
-        .hidden { display: none; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            background: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s ease-in-out;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background: #007BFF;
+            color: white;
+        }
         .circle {
             display: inline-block;
             width: 25px;
@@ -23,70 +55,52 @@
             font-size: 14px;
             cursor: pointer;
             user-select: none;
+            transition: all 0.2s ease-in-out;
         }
         .circle.red { background-color: red; }
         .circle.yellow { background-color: yellow; color: black; }
-        #legenda-container {
-            margin-top: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
     </style>
 </head>
 <body>
 
-    <h2>Horários das Salas - 2025.1</h2>
-    <div class="room-buttons">
-        <button onclick="toggleTable('manha-table')">Toggle Manhã</button>
-        <button onclick="toggleTable('tarde-table')">Toggle Tarde</button>
-        <button onclick="toggleTable('noite-table')">Toggle Noite</button>
-    </div>
+    <h1>Horários das Salas - 2025.1</h1>
+    
+    <button onclick="toggleTable('manha-table')">Toggle Manhã</button>
+    <button onclick="toggleTable('tarde-table')">Toggle Tarde</button>
+    <button onclick="toggleTable('noite-table')">Toggle Noite</button>
 
-    <table id="manha-table">
-        <tr>
-            <th>Horário</th>
-            <th>Segunda</th>
-            <th>Terça</th>
-            <th>Quarta</th>
-            <th>Quinta</th>
-            <th>Sexta</th>
-            <th>Sábado</th>
-        </tr>
-    </table>
-
-    <table id="tarde-table" class="hidden">
-        <tr>
-            <th>Horário</th>
-            <th>Segunda</th>
-            <th>Terça</th>
-            <th>Quarta</th>
-            <th>Quinta</th>
-            <th>Sexta</th>
-            <th>Sábado</th>
-        </tr>
-    </table>
-
-    <table id="noite-table" class="hidden">
-        <tr>
-            <th>Horário</th>
-            <th>Segunda</th>
-            <th>Terça</th>
-            <th>Quarta</th>
-            <th>Quinta</th>
-            <th>Sexta</th>
-            <th>Sábado</th>
-        </tr>
-    </table>
-
-    <div id="legenda-container">
-        <h3>Legenda:</h3>
-        <ul id="legenda-lista"></ul>
-    </div>
+    <div id="manha-table"></div>
+    <div id="tarde-table"></div>
+    <div id="noite-table"></div>
 
     <script>
-        function toggleTable(tableId) {
-            const table = document.getElementById(tableId);
-            table.classList.toggle('hidden');
+        function toggleTable(id) {
+            let table = document.getElementById(id);
+            table.style.display = (table.style.display === "none") ? "block" : "none";
+        }
+
+        function criarTabela(id, horarios, turno) {
+            let tabelaHTML = `<table id="${id}">
+                <tr><th>Horário</th><th>Segunda</th><th>Terça</th><th>Quarta</th><th>Quinta</th><th>Sexta</th><th>Sábado</th></tr>`;
+
+            horarios.forEach(horario => {
+                tabelaHTML += `<tr><td>${horario}</td>`;
+                for (let dia of ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]) {
+                    tabelaHTML += `<td>${gerarCírculos(turno, dia, horario)}</td>`;
+                }
+                tabelaHTML += `</tr>`;
+            });
+
+            tabelaHTML += `</table>`;
+            document.getElementById(id).innerHTML = tabelaHTML;
+        }
+
+        function gerarCírculos(turno, dia, horario) {
+            let html = "";
+            for (let i = 1; i <= 18; i++) {
+                html += `<span class="circle" data-info="${horario}|${dia}|${turno}" onclick="toggleCircle(event)">${i}</span>`;
+            }
+            return html;
         }
 
         function toggleCircle(event) {
@@ -98,60 +112,32 @@
 
             const circle = event.target;
             const numero = circle.textContent;
-            const legendaLista = document.getElementById("legenda-lista");
-
             const [horario, dia, turno] = circle.dataset.info.split('|');
-            const legendaId = `legenda-${turno}-${dia}-${horario}-${numero}`;
-            
+            const key = `status-${turno}-${dia}-${horario}-${numero}`;
+
             if (circle.classList.contains('red')) {
                 circle.classList.remove('red');
                 circle.classList.add('yellow');
+                localStorage.setItem(key, "yellow");
             } else if (circle.classList.contains('yellow')) {
                 circle.classList.remove('yellow');
-                circle.removeAttribute('title');
+                localStorage.removeItem(key);
             } else {
-                circle.classList.add('red');
-            }
-
-            if (circle.classList.contains('red')) {
                 let info = prompt(`Insira informações para ${dia} (${turno}) - ${horario}:`);
                 if (info) {
-                    let itemLegenda = document.createElement("li");
-                    itemLegenda.id = legendaId;
-                    itemLegenda.textContent = `[${turno}] ${dia} - ${horario} | Nº ${numero}: ${info}`;
-                    legendaLista.appendChild(itemLegenda);
-                    circle.setAttribute('title', info); // Adiciona tooltip
-                } else {
-                    circle.classList.remove('red');
-                }
-            } else {
-                let itemLegenda = document.getElementById(legendaId);
-                if (itemLegenda) {
-                    itemLegenda.remove();
+                    circle.classList.add('red');
+                    localStorage.setItem(key, "red");
                 }
             }
         }
 
-        function criarTabela(idTabela, horarios, turno) {
-            const tabela = document.getElementById(idTabela);
-            const dias = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-
-            horarios.forEach(horario => {
-                const row = tabela.insertRow();
-                const cellHorario = row.insertCell(0);
-                cellHorario.textContent = horario;
-
-                dias.forEach((dia) => {
-                    const cell = row.insertCell();
-                    for (let i = 1; i <= 18; i++) {
-                        const circle = document.createElement("span");
-                        circle.className = "circle";
-                        circle.textContent = i;
-                        circle.dataset.info = `${horario}|${dia}|${turno}`; 
-                        circle.addEventListener("click", toggleCircle);
-                        cell.appendChild(circle);
-                    }
-                });
+        function carregarEstado() {
+            document.querySelectorAll('.circle').forEach(circle => {
+                const [horario, dia, turno] = circle.dataset.info.split('|');
+                const key = `status-${turno}-${dia}-${horario}-${circle.textContent}`;
+                const estado = localStorage.getItem(key);
+                if (estado === "red") circle.classList.add("red");
+                else if (estado === "yellow") circle.classList.add("yellow");
             });
         }
 
@@ -159,8 +145,10 @@
             criarTabela("manha-table", ["07:15-09:15 (AB)", "09:15-11:30 (CD)"], "Manhã");
             criarTabela("tarde-table", ["13:15-15:10 (AB)", "15:20-17:30 (CD)"], "Tarde");
             criarTabela("noite-table", ["18:30-20:10 (AB)", "20:20-22:00 (CD)"], "Noite");
-        });
 
+            setTimeout(carregarEstado, 100);
+        });
     </script>
+
 </body>
 </html>
